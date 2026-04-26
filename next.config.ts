@@ -5,10 +5,6 @@ const nextConfig: NextConfig = {
   /* config options here */
   turbopack: {},
   allowedDevOrigins: ['10.84.187.68'],
-  output: 'export',
-  images: {
-    unoptimized: true,
-  },
 };
 
 export default withPWA({
