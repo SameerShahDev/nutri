@@ -124,8 +124,8 @@ export default function Dashboard() {
           }
         )
         .subscribe((status) => {
-          if (status === 'SUBSCRIPTION_ERROR') {
-            console.error('Subscription error');
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error('Subscription error:', status);
           }
         });
     };
