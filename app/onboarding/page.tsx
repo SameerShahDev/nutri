@@ -136,7 +136,7 @@ export default function OnboardingPage() {
     whileHover: { scale: 1.05 },
     whileTap: { scale: 0.95 },
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 400,
       damping: 17,
     },
