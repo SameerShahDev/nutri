@@ -19,12 +19,14 @@ git push origin main
 3. Connect to your GitHub repository
 4. Select this repository
 
-### 3. Build Settings
+### 3. Build Settings (IMPORTANT - Do NOT use wrangler)
 ```
 Framework preset: Next.js
 Build command: npm run build
 Build output directory: .next
 ```
+
+**⚠️ CRITICAL: Do NOT enable "Use wrangler" or any OpenNext settings. Use standard Next.js deployment.**
 
 ### 4. Environment Variables
 Add these in Cloudflare Pages → Settings → Environment Variables:
@@ -50,3 +52,4 @@ Click "Save and Deploy"
 - Cloudflare Pages supports Next.js SSR/SSG natively
 - API routes will work as Cloudflare Functions
 - Supabase Edge Functions need to be deployed separately via Supabase CLI
+- **Do NOT use wrangler or OpenNext - use standard Next.js deployment**
