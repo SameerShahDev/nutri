@@ -61,7 +61,7 @@ Run the SQL schema in `supabase/schema.sql` in your Supabase SQL editor to creat
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the application.
+Open [https://communityguard.pages.dev](https://communityguard.pages.dev) to see the application.
 
 ## Building for Production
 
