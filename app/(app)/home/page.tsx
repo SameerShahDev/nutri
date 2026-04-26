@@ -8,13 +8,15 @@ import { useRouter } from 'next/navigation';
 import { useLocalStorage } from '@/lib/useLocalStorage';
 
 export default function HomePage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [macros, setMacros] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 });
   const [dailyStats, setDailyStats] = useLocalStorage('dailyStats', { steps: 0, water: 0, sleep: 0 });
   const [showManualEntryModal, setShowManualEntryModal] = useState(false);
   const [manualEntryType, setManualEntryType] = useState<'steps' | 'sleep' | null>(null);
   const [manualEntryValue, setManualEntryValue] = useState('');
-  const router = useRouter();
+  const [showFoodEntryModal, setShowFoodEntryModal] = useState(false);
+  const [foodInput, setFoodInput] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +57,15 @@ export default function HomePage() {
     };
 
     fetchData();
+  }, []);
+
+  // Listen for custom event to open food entry modal
+  useEffect(() => {
+    const handleOpenFoodEntryModal = () => {
+      setShowFoodEntryModal(true);
+    };
+    window.addEventListener('openFoodEntryModal', handleOpenFoodEntryModal);
+    return () => window.removeEventListener('openFoodEntryModal', handleOpenFoodEntryModal);
   }, []);
 
   const macroGoals = { 
@@ -122,6 +133,57 @@ export default function HomePage() {
       setManualEntryValue('');
     } catch (error) {
       console.error('Error saving manual entry:', error);
+    }
+  };
+
+  const handleFoodEntry = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Parse food input (e.g., "2 roti" or "10gm soya chunks")
+      const input = foodInput.toLowerCase();
+      const quantityMatch = input.match(/(\d+)/);
+      const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+      
+      // Fetch nutrition data from database
+      const { data: nutritionData } = await supabase
+        .from('nutrition_database')
+        .select('*')
+        .ilike('name', `%${input.replace(/[\d\s]+/g, '')}%`)
+        .limit(1)
+        .single();
+
+      if (nutritionData) {
+        const calories = nutritionData.calories_per_unit * quantity;
+        const protein = nutritionData.protein_per_unit * quantity;
+        const carbs = nutritionData.carbs_per_unit * quantity;
+        const fats = nutritionData.fats_per_unit * quantity;
+
+        // Update macros locally
+        setMacros(prev => ({
+          calories: prev.calories + calories,
+          protein: prev.protein + protein,
+          carbs: prev.carbs + carbs,
+          fats: prev.fats + fats,
+        }));
+
+        // Save to Supabase
+        await supabase.from('daily_logs').insert({
+          user_id: user.id,
+          food_name: foodInput,
+          calories,
+          macros: { protein, carbs, fats },
+          type: 'manual',
+        });
+      } else {
+        alert('Food not found in database. Try a different name.');
+      }
+
+      setShowFoodEntryModal(false);
+      setFoodInput('');
+    } catch (error) {
+      console.error('Error saving food entry:', error);
     }
   };
 
@@ -403,6 +465,69 @@ export default function HomePage() {
                       className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 py-3 rounded-xl text-white font-semibold"
                     >
                       Save
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Food Entry Modal */}
+        <AnimatePresence>
+          {showFoodEntryModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setShowFoodEntryModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="glass-card rounded-3xl p-6 border border-white/10 w-full max-w-md"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white">Log Food</h3>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowFoodEntryModal(false)}
+                  >
+                    <X className="w-5 h-5 text-gray-400" />
+                  </motion.button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block">
+                      Food item (e.g., "2 roti", "10gm soya chunks")
+                    </label>
+                    <input
+                      type="text"
+                      value={foodInput}
+                      onChange={(e) => setFoodInput(e.target.value)}
+                      placeholder="2 roti"
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowFoodEntryModal(false)}
+                      className="flex-1 bg-white/10 py-3 rounded-xl text-white font-semibold"
+                    >
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleFoodEntry}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 py-3 rounded-xl text-white font-semibold"
+                    >
+                      Log
                     </motion.button>
                   </div>
                 </div>

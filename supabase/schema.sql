@@ -320,6 +320,41 @@ CREATE TRIGGER update_master_nutrients_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+-- Create nutrition_database table for food items
+CREATE TABLE nutrition_database (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  unit TEXT NOT NULL, -- e.g., 'piece', '100g', '1 cup'
+  calories_per_unit DECIMAL(10,2) NOT NULL,
+  protein_per_unit DECIMAL(10,2) NOT NULL,
+  carbs_per_unit DECIMAL(10,2) NOT NULL,
+  fats_per_unit DECIMAL(10,2) NOT NULL,
+  category TEXT, -- e.g., 'grains', 'protein', 'vegetables'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE nutrition_database ENABLE ROW LEVEL SECURITY;
+
+-- Allow all users to read nutrition database
+CREATE POLICY "Allow read access to nutrition database" ON nutrition_database FOR SELECT USING (true);
+
+-- Insert sample Indian food items
+INSERT INTO nutrition_database (name, unit, calories_per_unit, protein_per_unit, carbs_per_unit, fats_per_unit, category) VALUES
+('roti', 'piece', 104.00, 3.00, 17.00, 3.00, 'grains'),
+('rice', '1 cup', 206.00, 4.00, 45.00, 0.00, 'grains'),
+('dal', '1 cup', 180.00, 9.00, 20.00, 5.00, 'protein'),
+('soya chunks', '100g', 345.00, 52.00, 12.00, 19.00, 'protein'),
+('paneer', '100g', 265.00, 18.00, 3.00, 20.00, 'protein'),
+('chicken breast', '100g', 165.00, 31.00, 0.00, 3.60, 'protein'),
+('egg', 'piece', 78.00, 6.00, 0.60, 5.00, 'protein'),
+('milk', '1 cup', 150.00, 8.00, 12.00, 8.00, 'dairy'),
+('curd', '1 cup', 60.00, 3.00, 3.00, 3.00, 'dairy'),
+('banana', 'piece', 105.00, 1.30, 27.00, 0.40, 'fruits'),
+('apple', 'piece', 95.00, 0.50, 25.00, 0.30, 'fruits'),
+('almonds', '10g', 57.00, 2.10, 2.10, 5.00, 'nuts'),
+('ghee', '1 tbsp', 135.00, 0.00, 0.00, 15.00, 'fats');
+
 -- Create workouts_history table
 CREATE TABLE workouts_history (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
