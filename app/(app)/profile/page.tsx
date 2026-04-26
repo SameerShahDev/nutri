@@ -35,6 +35,8 @@ export default function ProfilePage() {
             height: data.height?.toString() || '',
             full_name: data.full_name || '',
           });
+          setDarkMode(data.dark_mode !== undefined ? data.dark_mode : true);
+          setNotifications(data.notifications_enabled !== undefined ? data.notifications_enabled : true);
         }
 
         // Fetch stats
@@ -78,6 +80,40 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/auth/login');
+  };
+
+  const handleToggleDarkMode = async () => {
+    const newValue = !darkMode;
+    setDarkMode(newValue);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('profiles')
+        .update({ dark_mode: newValue })
+        .eq('id', user.id);
+    } catch (error) {
+      console.error('Error updating dark mode:', error);
+    }
+  };
+
+  const handleToggleNotifications = async () => {
+    const newValue = !notifications;
+    setNotifications(newValue);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('profiles')
+        .update({ notifications_enabled: newValue })
+        .eq('id', user.id);
+    } catch (error) {
+      console.error('Error updating notifications:', error);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -347,7 +383,7 @@ export default function ProfilePage() {
                     </div>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => setDarkMode(!darkMode)}
+                      onClick={handleToggleDarkMode}
                       className={`w-12 h-6 rounded-full transition-colors ${darkMode ? 'bg-purple-600' : 'bg-gray-600'}`}
                     >
                       <motion.div
@@ -367,7 +403,7 @@ export default function ProfilePage() {
                     </div>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => setNotifications(!notifications)}
+                      onClick={handleToggleNotifications}
                       className={`w-12 h-6 rounded-full transition-colors ${notifications ? 'bg-blue-600' : 'bg-gray-600'}`}
                     >
                       <motion.div

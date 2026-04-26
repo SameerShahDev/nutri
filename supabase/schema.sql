@@ -14,6 +14,8 @@ CREATE TABLE profiles (
   calorie_goal INTEGER DEFAULT 2000,
   water_goal INTEGER DEFAULT 2000,
   subscription_plan TEXT DEFAULT 'free' CHECK (subscription_plan IN ('free', 'starter', 'pro', 'elite')),
+  dark_mode BOOLEAN DEFAULT true,
+  notifications_enabled BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );

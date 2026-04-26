@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { BrainCircuit, Footprints, Droplet, Moon, Crown, MessageCircle, ChevronRight, Plus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BrainCircuit, Footprints, Droplet, Moon, Crown, MessageCircle, ChevronRight, Plus, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +10,9 @@ export default function HomePage() {
   const [profile, setProfile] = useState<any>(null);
   const [macros, setMacros] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 });
   const [dailyStats, setDailyStats] = useState({ steps: 0, water: 0, sleep: 0 });
+  const [showManualEntryModal, setShowManualEntryModal] = useState(false);
+  const [manualEntryType, setManualEntryType] = useState<'steps' | 'sleep' | null>(null);
+  const [manualEntryValue, setManualEntryValue] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -79,6 +82,44 @@ export default function HomePage() {
       setDailyStats(prev => ({ ...prev, water: prev.water + amount }));
     } catch (error) {
       console.error('Error adding water:', error);
+    }
+  };
+
+  const handleManualEntry = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const value = parseInt(manualEntryValue);
+
+      if (manualEntryType === 'steps') {
+        await supabase.from('daily_logs').insert({
+          user_id: user.id,
+          food_name: 'Steps',
+          calories: 0,
+          macros: { protein: 0, carbs: 0, fats: 0 },
+          steps: value,
+          type: 'manual',
+        });
+        setDailyStats(prev => ({ ...prev, steps: value }));
+      } else if (manualEntryType === 'sleep') {
+        await supabase.from('daily_logs').insert({
+          user_id: user.id,
+          food_name: 'Sleep',
+          calories: 0,
+          macros: { protein: 0, carbs: 0, fats: 0 },
+          sleep_hours: value,
+          type: 'manual',
+        });
+        setDailyStats(prev => ({ ...prev, sleep: value }));
+      }
+
+      setShowManualEntryModal(false);
+      setManualEntryType(null);
+      setManualEntryValue('');
+    } catch (error) {
+      console.error('Error saving manual entry:', error);
     }
   };
 
@@ -267,11 +308,15 @@ export default function HomePage() {
           className="grid grid-cols-3 gap-3"
         >
           {/* Steps */}
-          <div className="glass-card rounded-xl p-3 border border-white/10 text-center">
+          <motion.div
+            whileTap={{ scale: 0.95 }}
+            onClick={() => { setManualEntryType('steps'); setShowManualEntryModal(true); }}
+            className="glass-card rounded-xl p-3 border border-white/10 text-center cursor-pointer"
+          >
             <Footprints className="w-5 h-5 text-green-400 mx-auto mb-1" />
             <p className="text-lg font-bold text-white">{dailyStats.steps}</p>
             <p className="text-gray-400 text-[10px]">Steps</p>
-          </div>
+          </motion.div>
 
           {/* Water */}
           <div className="glass-card rounded-xl p-3 border border-white/10 text-center relative">
@@ -288,12 +333,81 @@ export default function HomePage() {
           </div>
 
           {/* Sleep */}
-          <div className="glass-card rounded-xl p-3 border border-white/10 text-center">
+          <motion.div
+            whileTap={{ scale: 0.95 }}
+            onClick={() => { setManualEntryType('sleep'); setShowManualEntryModal(true); }}
+            className="glass-card rounded-xl p-3 border border-white/10 text-center cursor-pointer"
+          >
             <Moon className="w-5 h-5 text-purple-400 mx-auto mb-1" />
             <p className="text-lg font-bold text-white">{dailyStats.sleep}h</p>
             <p className="text-gray-400 text-[10px]">Sleep</p>
-          </div>
+          </motion.div>
         </motion.div>
+
+        {/* Manual Entry Modal */}
+        <AnimatePresence>
+          {showManualEntryModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setShowManualEntryModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="glass-card rounded-3xl p-6 border border-white/10 w-full max-w-md"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white">
+                    {manualEntryType === 'steps' ? 'Log Steps' : 'Log Sleep'}
+                  </h3>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowManualEntryModal(false)}
+                  >
+                    <X className="w-5 h-5 text-gray-400" />
+                  </motion.button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block">
+                      {manualEntryType === 'steps' ? 'Steps count' : 'Hours of sleep'}
+                    </label>
+                    <input
+                      type="number"
+                      value={manualEntryValue}
+                      onChange={(e) => setManualEntryValue(e.target.value)}
+                      placeholder={manualEntryType === 'steps' ? '10000' : '8'}
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowManualEntryModal(false)}
+                      className="flex-1 bg-white/10 py-3 rounded-xl text-white font-semibold"
+                    >
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleManualEntry}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 py-3 rounded-xl text-white font-semibold"
+                    >
+                      Save
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
