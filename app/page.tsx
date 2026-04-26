@@ -35,7 +35,7 @@ export default function Home() {
           >
             <Sparkles className="w-16 h-16 text-purple-400" />
           </motion.div>
-          <h1 className="text-4xl font-bold text-white mb-2">CommunityGuard</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">Igone</h1>
           <p className="text-gray-400">AI-Powered Nutrition Tracking</p>
         </motion.div>
 

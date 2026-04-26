@@ -1,6 +1,6 @@
 {
-  "name": "CommunityGuard Nutri",
-  "short_name": "Nutri",
+  "name": "Igone",
+  "short_name": "Igone",
   "description": "AI-Powered Nutrition Tracking",
   "start_url": "/dashboard",
   "display": "standalone",

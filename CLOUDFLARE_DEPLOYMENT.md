@@ -42,7 +42,7 @@ CASHFREE_API_SECRET=your_cashfree_api_secret
 CASHFREE_APP_ID=your_cashfree_app_id
 CASHFREE_API_URL=https://api.cashfree.com/pg
 CASHFREE_WEBHOOK_SECRET=your_webhook_secret
-NEXT_PUBLIC_APP_URL=https://communityguard.pages.dev
+NEXT_PUBLIC_APP_URL=https://igone.vercel.app
 ```
 
 ### 5. Deploy

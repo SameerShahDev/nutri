@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CommunityGuard",
+  title: "Igone",
   description: "AI-Powered Nutrition Tracking",
   manifest: "/manifest.json",
   icons: {

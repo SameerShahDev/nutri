@@ -392,7 +392,7 @@ export default function ProfilePage() {
 
                 {/* App Version */}
                 <div className="text-center text-gray-500 text-sm pt-4">
-                  <p>CommunityGuard Nutri v1.0.0</p>
+                  <p>Igone v1.0.0</p>
                 </div>
               </div>
             </motion.div>

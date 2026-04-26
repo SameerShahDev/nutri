@@ -1,4 +1,4 @@
-# CommunityGuard PWA
+# Igone
 
 A high-performance Progressive Web App built with Next.js 14 (App Router), Tailwind CSS, Framer Motion, and Supabase for authentication and database.
 
@@ -36,7 +36,7 @@ A high-performance Progressive Web App built with Next.js 14 (App Router), Tailw
 1. Clone the repository:
 ```bash
 git clone <your-repo-url>
-cd communityguard-pwa
+cd igone-pwa
 ```
 
 2. Install dependencies:
@@ -61,7 +61,7 @@ Run the SQL schema in `supabase/schema.sql` in your Supabase SQL editor to creat
 npm run dev
 ```
 
-Open [https://communityguard.pages.dev](https://communityguard.pages.dev) to see the application.
+Open [https://igone.vercel.app](https://igone.vercel.app) to see the application.
 
 ## Building for Production
 
@@ -79,7 +79,7 @@ The app is configured as a PWA. On supported browsers:
 ## Project Structure
 
 ```
-communityguard-pwa/
+igone-pwa/
 ├── app/
 │   ├── auth/
 │   │   └── login/          # Authentication pages

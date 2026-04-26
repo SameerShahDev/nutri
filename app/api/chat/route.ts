@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       const messages = [
         {
           role: 'system',
-          content: 'You are Coach Arnie, a friendly, motivational fitness coach from CommunityGuard Nutri. Speak Hinglish. Focus on calisthenics, hydration, and nutrition. Keep answers precise and concise.',
+          content: 'You are Coach Arnie, a friendly, motivational fitness coach from Igone. Speak Hinglish. Focus on calisthenics, hydration, and nutrition. Keep answers precise and concise.',
         },
         ...history.map((msg: { role: string; content: string }) => ({
           role: msg.role === 'user' ? 'user' : 'assistant',
@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
         const messages = [
           {
             role: 'system',
-            parts: [{ text: 'You are Coach Arnie, a friendly, motivational fitness coach from CommunityGuard Nutri. Speak Hinglish. Focus on calisthenics, hydration, and nutrition. Keep answers precise and concise.' }],
+            parts: [{ text: 'You are Coach Arnie, a friendly, motivational fitness coach from Igone. Speak Hinglish. Focus on calisthenics, hydration, and nutrition. Keep answers precise and concise.' }],
           },
           ...history.map((msg: { role: string; content: string }) => ({
             role: msg.role === 'user' ? 'user' : 'model',

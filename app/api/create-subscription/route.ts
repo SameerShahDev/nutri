@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           subscription_id: subscriptionId,
-          subscription_name: `CommunityGuard ${plan.name} Plan`,
+          subscription_name: `Igone ${plan.name} Plan`,
           subscription_amount: plan.amount,
           subscription_type: 'RECURRING',
           subscription_interval: 'month',
