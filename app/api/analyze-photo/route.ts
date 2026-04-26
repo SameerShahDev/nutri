@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'LIMIT_EXCEEDED',
-          message: 'Limit khatam bhai, upgrade kar lo!',
+          message: 'Daily limit reached. Please upgrade your plan!',
           plan: errorData.plan,
           current: errorData.current,
           limit: errorData.limit,
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'LIMIT_EXCEEDED',
-          message: 'Limit khatam bhai, upgrade kar lo!',
+          message: 'Daily limit reached. Please upgrade your plan!',
           plan: checkData.plan,
           current: checkData.current,
           limit: checkData.limit,

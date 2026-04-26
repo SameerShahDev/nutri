@@ -16,7 +16,7 @@ export default function ChatPage() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hey! Main Coach Arnie hoon. Aaj kya plan hai? Workout, nutrition, ya kuch aur? Let\'s crush it! 💪',
+      content: 'Hey! I am Coach Arnie. What is the plan for today? Workout, nutrition, or something else? Let\'s crush it! 💪',
     },
   ]);
   const [input, setInput] = useState('');
