@@ -32,12 +32,16 @@ export default function AppLayout() {
 
     checkSession();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.push('/auth/login');
-      } else {
+    // Listen for auth changes - this handles session persistence on refresh
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setLoading(false);
+      } else if (event === 'SIGNED_OUT') {
+        router.push('/auth/login');
+        // Clear local storage on logout
+        localStorage.removeItem('dailyStats');
+        localStorage.removeItem('userWeight');
       }
     });
 

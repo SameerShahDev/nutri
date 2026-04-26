@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User, Crown, Settings, LogOut, Award, Flame, Target, TrendingUp, Edit2, ChevronRight, ArrowLeft, Bell, Moon, Sun, HelpCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { useLocalStorage } from '@/lib/useLocalStorage';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -14,6 +15,7 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState({ weight: '', height: '', full_name: '' });
   const [darkMode, setDarkMode] = useState(true);
   const [notifications, setNotifications] = useState(true);
+  const [userWeight, setUserWeight] = useLocalStorage('userWeight', '');
   const router = useRouter();
 
   useEffect(() => {
@@ -31,10 +33,11 @@ export default function ProfilePage() {
         if (data) {
           setProfile(data);
           setEditForm({
-            weight: data.weight?.toString() || '',
+            weight: data.weight?.toString() || userWeight,
             height: data.height?.toString() || '',
             full_name: data.full_name || '',
           });
+          setUserWeight(data.weight?.toString() || userWeight);
           setDarkMode(data.dark_mode !== undefined ? data.dark_mode : true);
           setNotifications(data.notifications_enabled !== undefined ? data.notifications_enabled : true);
         }
@@ -130,6 +133,7 @@ export default function ProfilePage() {
         })
         .eq('id', user.id);
 
+      setUserWeight(editForm.weight);
       setProfile((prev: any) => ({ ...prev, ...editForm }));
       setIsEditing(false);
     } catch (error) {

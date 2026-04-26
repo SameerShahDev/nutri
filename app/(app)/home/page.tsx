@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BrainCircuit, Footprints, Droplet, Moon, Crown, MessageCircle, ChevronRight, Plus, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { useLocalStorage } from '@/lib/useLocalStorage';
 
 export default function HomePage() {
   const [profile, setProfile] = useState<any>(null);
   const [macros, setMacros] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 });
-  const [dailyStats, setDailyStats] = useState({ steps: 0, water: 0, sleep: 0 });
+  const [dailyStats, setDailyStats] = useLocalStorage('dailyStats', { steps: 0, water: 0, sleep: 0 });
   const [showManualEntryModal, setShowManualEntryModal] = useState(false);
   const [manualEntryType, setManualEntryType] = useState<'steps' | 'sleep' | null>(null);
   const [manualEntryValue, setManualEntryValue] = useState('');
@@ -45,6 +46,7 @@ export default function HomePage() {
           const totalFats = logs.reduce((sum, log) => sum + (log.macros?.fats || 0), 0);
           const totalWater = logs.reduce((sum, log) => sum + (log.water_intake || 0), 0);
           setMacros({ calories: totalCalories, protein: totalProtein, carbs: totalCarbs, fats: totalFats });
+          // Update water in local storage
           setDailyStats(prev => ({ ...prev, water: totalWater }));
         }
       } catch (error) {
