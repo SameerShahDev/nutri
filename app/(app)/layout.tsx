@@ -58,16 +58,21 @@ export default function AppLayout() {
         return <Home />;
       case 'workout':
         return <Workout />;
-      case 'fitness':
-        return <Fitness />;
       case 'chat':
         return <Chat />;
-      case 'logs':
-        return <Logs />;
       case 'profile':
         return <Profile />;
       default:
         return <Home />;
+    }
+  };
+
+  const handleCenterClick = () => {
+    if (activeTab === 'workout') {
+      // Trigger quick log modal in workout page via a custom event or state
+      setActiveTab('workout');
+    } else {
+      setActiveTab('workout');
     }
   };
 
@@ -85,7 +90,7 @@ export default function AppLayout() {
         </motion.div>
       </AnimatePresence>
       
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} onCenterClick={handleCenterClick} />
     </div>
   );
 }

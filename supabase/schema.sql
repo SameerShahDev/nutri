@@ -318,6 +318,39 @@ CREATE TRIGGER update_master_nutrients_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+-- Create workouts_history table
+CREATE TABLE workouts_history (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  workout_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  duration_minutes INTEGER,
+  calories_burned INTEGER,
+  exercises_completed INTEGER,
+  total_exercises INTEGER,
+  workout_date DATE NOT NULL,
+  completed BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- RLS for workouts_history
+ALTER TABLE workouts_history ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own workouts" ON workouts_history
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own workouts" ON workouts_history
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own workouts" ON workouts_history
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Trigger to update updated_at
+CREATE TRIGGER update_workouts_history_updated_at
+  BEFORE UPDATE ON workouts_history
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 -- Create function to handle new user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$

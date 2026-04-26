@@ -6,9 +6,10 @@ import { Home, Dumbbell, Plus, ClipboardList, User, MessageSquare } from 'lucide
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onCenterClick?: () => void;
 }
 
-export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
+export default function BottomNav({ activeTab, onTabChange, onCenterClick }: BottomNavProps) {
   const tabs = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'workout', icon: Dumbbell, label: 'Workout' },
@@ -29,7 +30,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               <motion.button
                 key={tab.id}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => onCenterClick?.()}
                 className="relative -top-6"
               >
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.5)]">

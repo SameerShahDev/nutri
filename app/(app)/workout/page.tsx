@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Dumbbell, Flame, Lock, Crown, Zap, Heart, Activity, Target, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Dumbbell, Flame, Lock, Crown, Zap, Heart, Activity, Target, ChevronRight, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 export default function WorkoutPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [stats, setStats] = useState({ totalWorkouts: 0, streak: 0 });
+  const [showQuickLogModal, setShowQuickLogModal] = useState(false);
+  const [quickLogData, setQuickLogData] = useState({ name: '', duration: '', calories: '' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,17 +27,17 @@ export default function WorkoutPage() {
         
         if (profileData) setProfile(profileData);
 
-        // Fetch workout stats (using body_reports for now)
-        const { data: reports } = await supabase
-          .from('body_reports')
-          .select('analysis_date')
+        // Fetch workout stats from workouts_history
+        const { data: workouts } = await supabase
+          .from('workouts_history')
+          .select('workout_date, completed')
           .eq('user_id', user.id);
 
-        if (reports) {
-          const totalWorkouts = reports.length;
+        if (workouts) {
+          const totalWorkouts = workouts.filter(w => w.completed).length;
           
           // Calculate streak
-          const uniqueDays = new Set(reports.map(r => r.analysis_date));
+          const uniqueDays = new Set(workouts.map(w => w.workout_date));
           const sortedDays = Array.from(uniqueDays).sort().reverse();
           let streak = 0;
           const today = new Date().toISOString().split('T')[0];
@@ -66,6 +70,49 @@ export default function WorkoutPage() {
     { id: 'yoga', name: 'Yoga & Flexibility', icon: Heart, color: 'from-green-500 to-emerald-500' },
     { id: 'cardio', name: 'Cardio', icon: Activity, color: 'from-orange-500 to-red-500' },
   ];
+
+  const handleCategoryClick = (categoryId: string) => {
+    router.push(`/workout/category/${categoryId}`);
+  };
+
+  const handleStartWorkout = () => {
+    router.push('/workout/exercise/1');
+  };
+
+  const handleQuickLogSubmit = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase.from('workouts_history').insert({
+        user_id: user.id,
+        workout_name: quickLogData.name,
+        category: 'manual',
+        duration_minutes: parseInt(quickLogData.duration),
+        calories_burned: parseInt(quickLogData.calories),
+        exercises_completed: 1,
+        total_exercises: 1,
+        workout_date: new Date().toISOString().split('T')[0],
+        completed: true,
+      });
+
+      setShowQuickLogModal(false);
+      setQuickLogData({ name: '', duration: '', calories: '' });
+      
+      // Refresh stats
+      const { data: workouts } = await supabase
+        .from('workouts_history')
+        .select('workout_date, completed')
+        .eq('user_id', user.id);
+
+      if (workouts) {
+        const totalWorkouts = workouts.filter(w => w.completed).length;
+        setStats(prev => ({ ...prev, totalWorkouts }));
+      }
+    } catch (error) {
+      console.error('Error logging workout:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0e1a] p-6 pb-24">
@@ -109,6 +156,7 @@ export default function WorkoutPage() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={handleStartWorkout}
               className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl text-white font-semibold flex items-center gap-2"
             >
               Start Workout
@@ -154,6 +202,7 @@ export default function WorkoutPage() {
                   transition={{ delay: 0.4 + index * 0.1 }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCategoryClick(category.id)}
                   className="glass-card rounded-2xl p-4 border border-white/10 cursor-pointer"
                 >
                   <div className={`w-12 h-12 bg-gradient-to-br ${category.color} rounded-xl flex items-center justify-center mb-3`}>
@@ -214,6 +263,91 @@ export default function WorkoutPage() {
             )}
           </div>
         </motion.div>
+
+        {/* Floating Quick Log Button */}
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowQuickLogModal(true)}
+          className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.5)] z-40"
+        >
+          <Plus className="w-6 h-6 text-white" />
+        </motion.button>
+
+        {/* Quick Log Modal */}
+        <AnimatePresence>
+          {showQuickLogModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setShowQuickLogModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="glass-card rounded-3xl p-6 border border-white/10 w-full max-w-md"
+              >
+                <h3 className="text-xl font-bold text-white mb-4">Quick Log Workout</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block">Workout Name</label>
+                    <input
+                      type="text"
+                      value={quickLogData.name}
+                      onChange={(e) => setQuickLogData({ ...quickLogData, name: e.target.value })}
+                      placeholder="e.g., Morning Run"
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block">Duration (minutes)</label>
+                    <input
+                      type="number"
+                      value={quickLogData.duration}
+                      onChange={(e) => setQuickLogData({ ...quickLogData, duration: e.target.value })}
+                      placeholder="30"
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block">Calories Burned</label>
+                    <input
+                      type="number"
+                      value={quickLogData.calories}
+                      onChange={(e) => setQuickLogData({ ...quickLogData, calories: e.target.value })}
+                      placeholder="200"
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowQuickLogModal(false)}
+                      className="flex-1 bg-white/10 py-3 rounded-xl text-white font-semibold"
+                    >
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleQuickLogSubmit}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 py-3 rounded-xl text-white font-semibold"
+                    >
+                      Save
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
